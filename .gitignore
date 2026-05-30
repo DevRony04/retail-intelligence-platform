@@ -1,0 +1,137 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Pyinstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nosexml/
+coverage.xml
+*.cover
+*.py,cover
+.fullname
+.cache
+.pytest_cache/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+DEBUG
+target/
+
+# Virtual Environments
+venv/
+.venv/
+ENV/
+env/
+active/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# Local Databases & telemetry logs
+*.db
+*.sqlite
+*.sqlite3
+outputs/
+History_copy
+downloads_list.txt
+pdf_text.txt
+*.log
+
+# Project-specific files
+# Model files
+*.pt
+*.pth
+*.onnx
+*.weights
+
+# Raw data files (keep config files)
+data/*.csv
+data/*.jsonl
+!data/camera_config.json
+!data/store_layout.json
+!data/sample_events.jsonl
+
+# Environment variables & credentials
+.env
+.env.local
+.env.*.local
+credentials.json
+secrets.json
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+.docker/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+~*
+
+# OS-specific
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE temporary files
+*.code-workspace
+.history/
+.vscode-test/
+
+# Application-specific logs and outputs
+outputs/logs/
+outputs/events.jsonl
+pipeline/outputs/
+
+# Credentials and sensitive data
+*.key
+*.pem
+api_key.txt
+token.txt

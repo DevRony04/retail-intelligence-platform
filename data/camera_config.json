@@ -1,0 +1,57 @@
+{
+  "ENTRY_CAM_01": {
+    "camera_id": "ENTRY_CAM_01",
+    "store_id": "STORE_BLR_002",
+    "assigned_zone": "ENTRY",
+    "business_purpose": "Visitor entry and traffic threshold tracking",
+    "fps": 15,
+    "resolution": "1920x1080",
+    "stream_health_status": "healthy",
+    "detection_priority": "high",
+    "analytics_enabled": true
+  },
+  "SKINCARE_CAM_02": {
+    "camera_id": "SKINCARE_CAM_02",
+    "store_id": "STORE_BLR_002",
+    "assigned_zone": "SKINCARE",
+    "business_purpose": "Shopper browsing behaviors, product/shelf interactions, and premium layout analytics",
+    "fps": 15,
+    "resolution": "1920x1080",
+    "stream_health_status": "healthy",
+    "detection_priority": "medium",
+    "analytics_enabled": true
+  },
+  "COSMETICS_CAM_03": {
+    "camera_id": "COSMETICS_CAM_03",
+    "store_id": "STORE_BLR_002",
+    "assigned_zone": "COSMETICS",
+    "business_purpose": "Promotional zone interactions and customer conversion analysis",
+    "fps": 15,
+    "resolution": "1920x1080",
+    "stream_health_status": "healthy",
+    "detection_priority": "medium",
+    "analytics_enabled": true
+  },
+  "BILLING_CAM_04": {
+    "camera_id": "BILLING_CAM_04",
+    "store_id": "STORE_BLR_002",
+    "assigned_zone": "BILLING",
+    "business_purpose": "Queue occupancy metrics, checkout line length analysis, and transaction correlation",
+    "fps": 15,
+    "resolution": "1920x1080",
+    "stream_health_status": "healthy",
+    "detection_priority": "high",
+    "analytics_enabled": true
+  },
+  "EXIT_CAM_05": {
+    "camera_id": "EXIT_CAM_05",
+    "store_id": "STORE_BLR_002",
+    "assigned_zone": "EXIT",
+    "business_purpose": "Visitor exit flow, total journey closure, and checkout verification",
+    "fps": 15,
+    "resolution": "1920x1080",
+    "stream_health_status": "healthy",
+    "detection_priority": "high",
+    "analytics_enabled": true
+  }
+}

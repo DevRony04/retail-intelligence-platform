@@ -1,0 +1,65 @@
+{
+  "STORE_BLR_002": {
+    "store_name": "Apex Retail Bangalore Indiranagar",
+    "open_hours": {
+      "open": "09:00",
+      "close": "22:00"
+    },
+    "zones": {
+      "ENTRY": {
+        "camera_id": "ENTRY_CAM_01",
+        "sku_zone": "THRESHOLD",
+        "polygon": [[0, 0], [1000, 0], [1000, 200], [0, 200]]
+      },
+      "SKINCARE": {
+        "camera_id": "SKINCARE_CAM_02",
+        "sku_zone": "MOISTURISER",
+        "polygon": [[100, 200], [400, 200], [400, 600], [100, 600]]
+      },
+      "COSMETICS": {
+        "camera_id": "COSMETICS_CAM_03",
+        "sku_zone": "LIPSTICK",
+        "polygon": [[700, 200], [1000, 200], [1000, 600], [700, 600]]
+      },
+      "BILLING": {
+        "camera_id": "BILLING_CAM_04",
+        "sku_zone": "CHECKOUT",
+        "polygon": [[200, 400], [800, 400], [800, 900], [200, 900]]
+      },
+      "EXIT": {
+        "camera_id": "EXIT_CAM_05",
+        "sku_zone": "THRESHOLD",
+        "polygon": [[0, 800], [1000, 800], [1000, 1000], [0, 1000]]
+      }
+    }
+  },
+  "STORE_001": {
+    "store_name": "Apex Retail Mumbai Koramangala",
+    "open_hours": {
+      "open": "09:00",
+      "close": "22:00"
+    },
+    "zones": {
+      "ENTRY": {
+        "camera_id": "ENTRY_CAM_01",
+        "sku_zone": "THRESHOLD",
+        "polygon": [[0, 0], [1000, 0], [1000, 200], [0, 200]]
+      },
+      "SKINCARE": {
+        "camera_id": "SKINCARE_CAM_02",
+        "sku_zone": "SERUM",
+        "polygon": [[150, 150], [450, 150], [450, 550], [150, 550]]
+      },
+      "BILLING": {
+        "camera_id": "BILLING_CAM_04",
+        "sku_zone": "CHECKOUT",
+        "polygon": [[300, 300], [700, 300], [700, 800], [300, 800]]
+      },
+      "EXIT": {
+        "camera_id": "EXIT_CAM_05",
+        "sku_zone": "THRESHOLD",
+        "polygon": [[0, 800], [1000, 800], [1000, 1000], [0, 1000]]
+      }
+    }
+  }
+}
