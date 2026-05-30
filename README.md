@@ -1,4 +1,4 @@
-# Store Intelligence System
+# Retail Intelligence System
 
 A real-time, production-grade AI Store Analytics and Operational Intelligence platform. It converts raw CCTV footage into structured event streams, tracks customer conversion funnels, maps normalized shopper heatmaps, and triggers alerts for operational anomalies.
 
