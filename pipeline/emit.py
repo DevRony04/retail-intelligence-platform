@@ -2,6 +2,11 @@ import uuid
 import json
 import os
 from datetime import datetime
+from dotenv import load_dotenv
+from loguru import logger
+
+# Load environment variables
+load_dotenv()
 
 class EventEmitter:
     def __init__(self, output_path):
@@ -39,5 +44,8 @@ class EventEmitter:
         try:
             with open(self.output_path, "a", encoding="utf-8") as f:
                 f.write(json.dumps(event) + "\n")
+            
+            # Structured log for event emission
+            logger.info(f"Event EMITTED | ID: {event.get('event_id')} | Type: {event.get('event_type')} | Cam: {event.get('camera_id')} | Visitor: {event.get('visitor_id')}")
         except Exception as e:
-            print(f"Error emitting event: {e}")
+            logger.error(f"Error emitting event: {e}")

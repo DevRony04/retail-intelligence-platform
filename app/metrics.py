@@ -126,7 +126,7 @@ def get_store_metrics(store_id: str, db: Session = Depends(get_db)):
         .filter(DBEvent.event_type.in_(["BILLING_QUEUE_JOIN", "QUEUE_JOIN"]))\
         .order_by(DBEvent.timestamp.desc()).first()
     
-    current_queue_depth = last_queue_event.queue_depth if last_queue_event else 0
+    current_queue_depth = last_queue_event.queue_depth if last_queue_event and last_queue_event.queue_depth is not None else 0
 
     # 6. Queue Abandonment Rate
     # Abandonment Rate = Visitors who left queue without purchase / Total visitors who joined queue

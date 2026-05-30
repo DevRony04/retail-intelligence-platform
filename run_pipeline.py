@@ -15,6 +15,10 @@ import json
 import subprocess
 import requests
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables at boot time
+load_dotenv()
 
 # Add root directory to path to ensure app imports work
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -119,12 +123,14 @@ def ingest_emitted_events(jsonl_path, api_url=API_URL):
         return failed_total == 0
 
     else:
-        print("\nFastAPI server is not running. Falling back to direct database insertion...")
+        from loguru import logger
+        logger.info("FastAPI server is offline. Bypassing REST API and falling back to robust direct SQL database insertion...")
         try:
             from app.database import SessionLocal, engine, Base
             from app.models import DBEvent
             
             # Ensure database schema is deployed
+            logger.info("Ensuring database schema and indexes are deployed in Neon PostgreSQL...")
             Base.metadata.create_all(bind=engine)
             
             db = SessionLocal()
@@ -138,6 +144,7 @@ def ingest_emitted_events(jsonl_path, api_url=API_URL):
                     if existing:
                         duplicates_count += 1
                         success_count += 1
+                        logger.info(f"Direct Ingestion: Idempotent duplicate bypassed | ID: {event['event_id']}")
                         continue
 
                     # Create model instance
@@ -166,33 +173,100 @@ def ingest_emitted_events(jsonl_path, api_url=API_URL):
                     )
                     db.add(db_event)
                     success_count += 1
+                    logger.info(f"Direct Ingestion: Event staged | ID: {event['event_id']} | Type: {event['event_type']} | Cam: {event['camera_id']}")
                     
+                logger.info(f"Direct Ingestion: Committing {success_count} staged events (including {duplicates_count} duplicates) to Neon PostgreSQL...")
                 db.commit()
-                print(f"Direct Database Ingestion Complete! Successfully integrated {success_count} events (including {duplicates_count} idempotent duplicates verified) directly into SQL database.")
+                logger.info(f"✅ Direct Database Ingestion Complete! Successfully integrated {success_count} events directly into SQL database.")
                 return True
             except Exception as db_err:
+                logger.error(f"❌ Direct Ingestion Transaction FAILED | Rolled back! | Error: {db_err}")
                 db.rollback()
-                print(f"Error writing directly to database: {db_err}")
                 return False
             finally:
                 db.close()
                 
         except Exception as imp_err:
-            print(f"Error importing database dependencies for direct ingestion: {imp_err}")
+            logger.error(f"Error importing database dependencies for direct ingestion: {imp_err}")
             return False
 
+def verify_neon_database(store_id="STORE_BLR_002"):
+    """
+    Verification Layer: Queries Neon DB, checks counts of events,
+    sessions, conversions, active zones, and logs a structured summary.
+    """
+    from loguru import logger
+    try:
+        from app.database import SessionLocal
+        from app.models import DBEvent
+        
+        db = SessionLocal()
+        
+        total_events = db.query(DBEvent).filter(DBEvent.store_id == store_id).count()
+        unique_visitors = db.query(DBEvent.visitor_id)\
+            .filter(DBEvent.store_id == store_id)\
+            .filter(DBEvent.is_staff == False)\
+            .distinct().count()
+            
+        unique_staff = db.query(DBEvent.visitor_id)\
+            .filter(DBEvent.store_id == store_id)\
+            .filter(DBEvent.is_staff == True)\
+            .distinct().count()
+            
+        purchases = db.query(DBEvent.visitor_id)\
+            .filter(DBEvent.store_id == store_id)\
+            .filter(DBEvent.event_type == "PURCHASE_COMPLETED")\
+            .distinct().count()
+            
+        active_zones = [z[0] for z in db.query(DBEvent.zone_id)\
+            .filter(DBEvent.store_id == store_id)\
+            .filter(DBEvent.zone_id.isnot(None))\
+            .distinct().all()]
+            
+        max_event = db.query(DBEvent).filter(DBEvent.store_id == store_id).order_by(DBEvent.timestamp.desc()).first()
+        max_time_str = max_event.timestamp.isoformat() + "Z" if max_event else "N/A"
+        
+        db.close()
+        
+        logger.info("=========================================================================")
+        logger.info("             VERIFICATION LAYER - POST-INGESTION METRICS SUMMARY")
+        logger.info("=========================================================================")
+        logger.info(f"  Target Store ID:         {store_id}")
+        logger.info(f"  Total Ingested Events:   {total_events}")
+        logger.info(f"  Unique Customer Sessions: {unique_visitors}")
+        logger.info(f"  Unique Staff Sessions:    {unique_staff}")
+        logger.info(f"  Completed Purchases:      {purchases}")
+        logger.info(f"  Active Recorded Zones:    {', '.join(active_zones)}")
+        logger.info(f"  Latest Log Event Time:    {max_time_str}")
+        logger.info("=========================================================================")
+        
+        return True
+    except Exception as err:
+        logger.error(f"❌ Verification Layer FAILED: {err}")
+        return False
+
 def main():
-    print("=========================================================================")
-    print("      APEX RETAIL - UNIFIED STORE INTELLIGENCE SYSTEM INTEGRATION")
-    print("=========================================================================")
+    from loguru import logger
+    logger.info("=========================================================================")
+    logger.info("      APEX RETAIL - UNIFIED STORE INTELLIGENCE SYSTEM INTEGRATION")
+    logger.info("=========================================================================")
+    logger.info("Pipeline started: Apex Retail Store Intelligence Integration pipeline initialized.")
     
-    # 1. Clear old event logs to ensure fresh run metrics
+    # 1. Automatically seed database with high-fidelity analytics on startup
+    try:
+        from app.seeder import seed_database
+        logger.info("Triggering automatic database seeding on pipeline startup to establish baseline...")
+        seed_database()
+    except Exception as e:
+        logger.warning(f"Could not automatically seed database on pipeline start: {e}")
+        
+    # 2. Clear old event logs to ensure fresh run metrics
     if os.path.exists(OUTPUT_PATH):
         try:
             os.remove(OUTPUT_PATH)
-            print("Cleared historical event log file outputs/events.jsonl.")
+            logger.info("Cleared historical event log file outputs/events.jsonl.")
         except Exception as e:
-            print(f"Warning: Could not remove old event log file: {e}")
+            logger.warning(f"Could not remove old event log file: {e}")
             
     # Create output directories if needed
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
@@ -212,16 +286,19 @@ def main():
     run_camera_pipeline("CAM_FLOOR_01", os.path.join(video_dir, "CAM 2.mp4"))
     run_camera_pipeline("CAM_BILLING_01", os.path.join(video_dir, "CAM 3.mp4"))
 
-    print("\n-------------------------------------------------------------------------")
-    print("             PIPELINE COMPLETE - INGESTING PROCESSED EVENTS")
-    print("-------------------------------------------------------------------------")
+    logger.info("\n-------------------------------------------------------------------------")
+    logger.info("             PIPELINE COMPLETE - INGESTING PROCESSED EVENTS")
+    logger.info("-------------------------------------------------------------------------")
     
     # Ingest the generated event log
     ingest_emitted_events(OUTPUT_PATH)
     
-    print("=========================================================================")
-    print("    INTEGRATION COMPLETE! RUN 'python assertions.py' TO VERIFY ALL KPIs.")
-    print("=========================================================================")
+    # Run post-ingestion verification layer
+    verify_neon_database(STORE_ID)
+    
+    logger.info("=========================================================================")
+    logger.info("    INTEGRATION COMPLETE! Pipeline execution and data ingestion complete.")
+    logger.info("=========================================================================")
 
 if __name__ == "__main__":
     main()
