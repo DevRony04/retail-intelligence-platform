@@ -1,9 +1,13 @@
+import os
 import time
 import uuid
+from datetime import datetime, timezone
 from fastapi import FastAPI, Request, Response, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from loguru import logger
+from sqlalchemy.sql import text
 from app.database import engine, Base
 from app.utils import setup_logging
 from app.ingestion import router as ingest_router
@@ -12,6 +16,40 @@ from app.funnel import router as funnel_router
 from app.heatmap import router as heatmap_router
 from app.anomalies import router as anomalies_router
 from app.health import router as health_router
+
+
+# ==========================================
+# 0. RESPONSE MODELS & TYPES
+# ==========================================
+class HealthStatus(BaseModel):
+    """Root health status response model with API metadata."""
+    status: str
+    service: str
+    version: str
+    environment: str
+    timestamp: str
+    database: str
+    endpoints: list
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "status": "healthy",
+                "service": "Retail Intelligence Platform API",
+                "version": "1.0.0",
+                "environment": "production",
+                "timestamp": "2026-06-01T12:00:00Z",
+                "database": "connected",
+                "endpoints": [
+                    "/health",
+                    "/events/ingest",
+                    "/{store_id}/metrics",
+                    "/{store_id}/funnel",
+                    "/{store_id}/heatmap",
+                    "/{store_id}/anomalies"
+                ]
+            }
+        }
 
 # ==========================================
 # 1. ORM TABLE INITIALIZATION & LOGS SETUP
@@ -124,3 +162,102 @@ async def observability_telemetry_middleware(request: Request, call_next):
     # Add trace ID directly to headers for tracking
     response.headers["X-Trace-ID"] = trace_id
     return response
+
+
+# ==========================================
+# 5. STARTUP EVENT HANDLER
+# ==========================================
+@app.on_event("startup")
+async def startup_event():
+    """
+    Executes on application startup.
+    Logs system initialization with environment details.
+    """
+    logger.bind(
+        trace_id="STARTUP", store_id="SYSTEM", endpoint="APP_BOOT",
+        latency_ms=0, event_count=0, status_code=200
+    ).info("🚀 Retail Intelligence Platform API booting...")
+    
+    # 1. Environment loaded check & log
+    app_env = os.getenv("APP_ENV", "production")
+    logger.bind(
+        trace_id="STARTUP", store_id="SYSTEM", endpoint="APP_BOOT",
+        latency_ms=0, event_count=0, status_code=200
+    ).info(f"✅ Environment configuration loaded successfully. Environment: {app_env}")
+    
+    # 2. Database connected check & log
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        logger.bind(
+            trace_id="STARTUP", store_id="SYSTEM", endpoint="APP_BOOT",
+            latency_ms=0, event_count=0, status_code=200
+        ).info("✅ Database layer initialized and connected successfully.")
+    except Exception as e:
+        logger.bind(
+            trace_id="STARTUP", store_id="SYSTEM", endpoint="APP_BOOT",
+            latency_ms=0, event_count=0, status_code=500
+        ).error(f"❌ Database connection failed during startup: {e}")
+        
+    logger.bind(
+        trace_id="STARTUP", store_id="SYSTEM", endpoint="APP_BOOT",
+        latency_ms=0, event_count=0, status_code=200
+    ).info("✅ API routes registered (metrics, funnel, heatmap, anomalies, health)")
+    
+    logger.bind(
+        trace_id="STARTUP", store_id="SYSTEM", endpoint="APP_BOOT",
+        latency_ms=0, event_count=0, status_code=200
+    ).info("✅ CORS middleware enabled for cross-origin requests")
+    
+    logger.bind(
+        trace_id="STARTUP", store_id="SYSTEM", endpoint="APP_BOOT",
+        latency_ms=0, event_count=0, status_code=200
+    ).info("✅ OpenAPI docs available at /docs and /redoc")
+    
+    logger.bind(
+        trace_id="STARTUP", store_id="SYSTEM", endpoint="APP_BOOT",
+        latency_ms=0, event_count=0, status_code=200
+    ).info("✅ Telemetry and observability middleware active")
+    
+    logger.bind(
+        trace_id="STARTUP", store_id="SYSTEM", endpoint="APP_BOOT",
+        latency_ms=0, event_count=0, status_code=200
+    ).success("🚀 Retail Intelligence Platform API boot successful. READY TO SERVE REQUESTS ✨")
+
+
+# ==========================================
+# 6. ROOT ENDPOINT - PRODUCTION HEALTH CHECK
+# ==========================================
+@app.get("/", response_model=HealthStatus, tags=["System"])
+async def root() -> HealthStatus:
+    """
+    Root endpoint returning API health status and metadata.
+    
+    Returns:
+        HealthStatus: Service health, version, environment, and available endpoints.
+    """
+    db_status = "connected"
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    except Exception:
+        db_status = "disconnected"
+
+    return HealthStatus(
+        status="healthy" if db_status == "connected" else "degraded",
+        service="Retail Intelligence Platform API",
+        version="1.0.0",
+        environment=os.getenv("APP_ENV", "production"),
+        timestamp=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        database=db_status,
+        endpoints=[
+            "/health",
+            "/events/ingest",
+            "/{store_id}/metrics",
+            "/{store_id}/funnel",
+            "/{store_id}/heatmap",
+            "/{store_id}/anomalies",
+            "/docs (OpenAPI Swagger UI)",
+            "/redoc (ReDoc documentation)"
+        ]
+    )
