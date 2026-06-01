@@ -438,4 +438,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 ## 👨‍💻 Author & Contributions
-Designed & Maintained by **Deepyaman Mondal**. Feel free to open a Pull Request or connect on [LinkedIn](https://www.linkedin.com/in/deepyamanmondal/) to collaborate on next-generation retail intelligence models!
+Designed & Maintained by **Deepyaman Mondal**. Feel free to open a Pull Request or connect on [LinkedIn](https://www.linkedin.com/in/deepyaman-mondal-8592a3265) to collaborate on next-generation retail intelligence models!
