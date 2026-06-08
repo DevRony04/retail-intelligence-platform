@@ -14,9 +14,15 @@ from app.database import Base, get_db
 from app.main import app
 from app.models import DBEvent
 
-# Setup Test File-Based Database to allow sharing across TestClient session threads
-TEST_DATABASE_URL = "sqlite:///./test_ingestion.db"
-engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
+from sqlalchemy.pool import StaticPool
+
+# Setup Test In-Memory Database with StaticPool to allow sharing across TestClient session threads
+TEST_DATABASE_URL = "sqlite://"
+engine = create_engine(
+    TEST_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @pytest.fixture
@@ -28,11 +34,6 @@ def clean_db():
     finally:
         db.close()
         Base.metadata.drop_all(bind=engine)
-        if os.path.exists("./test_ingestion.db"):
-            try:
-                os.remove("./test_ingestion.db")
-            except:
-                pass
 
 @pytest.fixture
 def client(clean_db):
