@@ -41,10 +41,11 @@ graph TD
 * Caches pip packages dynamically to speed up consecutive run times.
 
 #### 2. Install Project Dependencies
-* Installs dependencies defined in the production [`requirements.txt`](file:///c:/Deepyaman%20Mondal/retail-intelligence-platform/requirements.txt):
+* Installs dependencies defined in the production [`requirements.txt`](file:///c:/Deepyaman%20Mondal/retail-intelligence-platform/requirements.txt), along with the `httpx` testing dependency required by FastAPI's `TestClient` for E2E assertions:
   ```bash
   pip install --upgrade pip
   pip install -r requirements.txt
+  pip install httpx
   ```
 
 #### 3. Run Unit and Integration Tests
